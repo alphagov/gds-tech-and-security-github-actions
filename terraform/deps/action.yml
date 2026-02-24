@@ -1,0 +1,73 @@
+name: pre-commit checks
+description: Run pre-commit
+
+inputs:
+  terraform-version:
+    description: 'Terraform version to use'
+    required: false
+    type: string
+    default: 'latest'
+  terraform-docs-version:
+    description: 'Terraform-docs version to use'
+    required: false
+    type: string
+    default: 'v0.21.0'
+  terraform-docs-sha256:
+    description: 'Terraform-docs sha256 to verify'
+    required: false
+    type: string
+    default: '2fdd81b8d21ff1498cd559af0dcc5d155835f84600db06d3923e217124fc735a'
+  tflint-version:
+    description: 'TFLint version to use'
+    required: false
+    type: string
+    default: 'latest'
+  trivy-version:
+    description: 'Trivy version to use'
+    required: false
+    type: string
+    default: 'latest'
+  checkov-version:
+    description: 'Checkov version to use'
+    required: false
+    type: string
+    default: 'latest'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+        terraform_version: ${{ inputs.terraform-version }}
+
+    - name: Setup TFLint
+      uses: terraform-linters/setup-tflint@4cb9feea73331a35b422df102992a03a44a3bb33 # v6.2.1
+      with:
+        tflint_version: ${{ inputs.tflint-version }}
+
+    - name: Setup Trivy
+      uses: aquasecurity/setup-trivy@e6c2c5e321ed9123bda567646e2f96565e34abe1 # v0.2.4
+      with:
+        version: ${{ inputs.trivy-version }}
+
+    - name: Install Checkov
+      shell: bash
+      run: |
+        echo "Install Checkov"
+        package_spec="checkov"
+        [ "${{ inputs.checkov-version }}" != "latest" ] && package_spec+="==$version"
+        pip install \
+          -q \
+          "$package_spec"
+
+    - name: Install terraform-docs
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: |
+        echo "Install terraform-docs"
+        curl -sSLo "terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz" "https://github.com/terraform-docs/terraform-docs/releases/download/${{ inputs.terraform-docs-version }}/terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz"
+        echo "${{ inputs.terraform-docs-sha256 }}  terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz" | sha256sum -c -
+        tar -xzf "terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz"
+        chmod +x terraform-docs
+        mv terraform-docs /usr/local/bin/terraform-docs

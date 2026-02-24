@@ -1,0 +1,44 @@
+name: pre-commit
+description: Run pre-commit
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: false
+    type: string
+    default: '3'
+  pre-commit-version:
+    description: 'Pre-commit version to use'
+    required: false
+    type: string
+    default: 'latest'
+  skip-hooks:
+    description: 'Comma-separated list of hooks to skip'
+    required: false
+    type: string
+    default: 'conventional-branch-name'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install pre-commit
+      shell: bash
+      run: |
+        echo "Install pre-commit"
+        package_spec="pre-commit"
+        version="${{ inputs.pre-commit-version || 'latest' }}"
+        [ "$version" != "latest" ] && package_spec+="==$version"
+        pip install \
+          -q \
+          "$package_spec"
+
+    - name: Run pre-commit on all files
+      env:
+        SKIP: ${{ inputs.skip-hooks }}
+      shell: bash
+      run: pre-commit run --all-files
