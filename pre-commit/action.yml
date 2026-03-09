@@ -41,4 +41,7 @@ runs:
       env:
         SKIP: ${{ inputs.skip-hooks }}
       shell: bash
-      run: pre-commit run --all-files
+      run: >
+        pre-commit run \
+          --color always \
+          --all-files
