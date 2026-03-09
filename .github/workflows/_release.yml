@@ -1,0 +1,92 @@
+name: Release Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      action-name:
+        description: "Name of the action being released. Must correspond to the directory name"
+        required: true
+        type: string
+      version:
+        description: |
+          Optional semver version (example: 1.2.3).
+          If not provided, it will fetch latest tag and auto-bump patch
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Get current tags
+        run: git fetch --tags
+
+      - name: Validate input action name
+        run: |
+          input_path="${{ inputs.action-name }}"
+
+          if [ ! -d "$input_path" ]; then
+            echo "Action name must have a directory in the root of the repository"
+            exit 1
+          fi
+
+          # Ensure there are no child directories
+          subdirs="$(find "$input_path" -mindepth 1 -maxdepth 1 -type d | wc -l)"
+          if [ "$subdirs" -ne 0 ]; then
+            echo "'$input_path' is a parent directory. You must target a specific subfolder"
+            exit 1
+          fi
+
+      - name: Validate input version
+        if: ${{ inputs.version }}
+        run: |
+          # Check tag doesn't exist already
+          if git rev-parse "v$VERSION" &>/dev/null; then
+            echo "Tag v$VERSION already exists"
+            exit 1
+          fi
+
+          # Validate semver
+          if [[ ! "$VERSION" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid version: $VERSION"
+            echo "Expected semver format like: 1.2.3"
+            exit 1
+          fi
+
+      - name: Determine version
+        id: version
+        run: |
+          # If input version provided, use it
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+          else
+            # Find the latest tag
+            LATEST_TAG="$(git tag --list "v*" | sort -V | tail -n1)"
+            if [ -z "$LATEST_TAG" ]; then
+              VERSION="0.1.0"
+            else
+              # Remove 'v' prefix
+              LATEST_TAG="${LATEST_TAG#v}"
+              # Split into parts
+              IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+              PATCH=$((PATCH+1))
+              VERSION="$MAJOR.$MINOR.$PATCH"
+            fi
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: ${{ inputs.action-name }} v${{ steps.version.outputs.version }}
+          generate_release_notes: true
