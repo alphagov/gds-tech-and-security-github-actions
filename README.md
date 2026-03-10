@@ -2,9 +2,10 @@
 
 This repository contains a collection of GitHub Actions workflow templates that can be used with various types of repositories to automate the build, test, and deployment of applications and infrastructure.
 
-## Consuming actions from this repo
+## Consuming Github Actions from this repo
 
 Create the workflow job, and then include the action as a step:
+
 `- uses: alphagov/gds-github-workflows/{directories}@{ref}`
 
 E.g. for `pre-commit` action in `pre-commit/action.yml`:
@@ -27,12 +28,20 @@ The `ref` can be a branch or a git tag, but for sensitive repositories it is **h
 
 For each action usage guide, refer to each action `README.md` or `action.yml` file.
 
-## Add new github workflows
+## Add new Github Actions
 
-Actions are defined as [composites(https://docs.github.com/en/actions/tutorials/create-actions/create-a-composite-action). It allows each action the flexibility to be included across many workflows.
+Actions are defined as [composites](https://docs.github.com/en/actions/tutorials/create-actions/create-a-composite-action). It allows each action the flexibility to be included across many workflows.
 
 1. Install [pre-commit](https://pre-commit.com/).
-2. Create a directory in the root of the repo, with the following convention: `<category [optional]>/<action_name>/action.yml`.
+1. Create a directory in the root of the repo, with the following convention: `<category [optional]>/<action_name>/action.yml`.
+
+## Release a new Github Action version
+
+1. Go to [Release Action](https://github.com/alphagov/gds-github-workflows/actions/workflows/_release.yml) workflow
+1. Press the button `Run workflow`
+1. Input a name for the action. It must correspond to an existing directory in the root of the repo
+1. (optional) specify a version. If not specified, it will auto-bump the latest tag
+1. The changelog is auto-generated. If necessary, please modify it to include important changes
 
 ## Workflows examples
 
