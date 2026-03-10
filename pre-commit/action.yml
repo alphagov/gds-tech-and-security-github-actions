@@ -6,7 +6,7 @@ inputs:
     description: 'Python version to use'
     required: false
     type: string
-    default: '3'
+    default: '3.x'
   pre-commit-version:
     description: 'Pre-commit version to use'
     required: false
