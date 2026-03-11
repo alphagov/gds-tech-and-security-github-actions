@@ -16,7 +16,9 @@ inputs:
     description: 'Terraform-docs sha256 checksum to verify'
     required: false
     type: string
-    default: '2fdd81b8d21ff1498cd559af0dcc5d155835f84600db06d3923e217124fc735a'
+    default: |
+      2fdd81b8d21ff1498cd559af0dcc5d155835f84600db06d3923e217124fc735a
+      35b2e6846268841484e6eea7d00d7dfe2c94b4725e52cfe19aa6c26a86c32edc
   tflint-version:
     description: 'TFLint version to use'
     required: false
@@ -75,12 +77,52 @@ runs:
           "$package_spec"
 
     - name: Install terraform-docs
-      shell: bash
+      shell: bash --noprofile --norc -euo pipefail {0}
       working-directory: ${{ runner.temp }}
       run: |
         echo "Install terraform-docs"
-        curl -sSLo "terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz" "https://github.com/terraform-docs/terraform-docs/releases/download/${{ inputs.terraform-docs-version }}/terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz"
-        echo "${{ inputs.terraform-docs-sha256 }}  terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz" | sha256sum -c -
-        tar -xzf "terraform-docs-${{ inputs.terraform-docs-version }}-linux-amd64.tar.gz"
+
+        version="${{ inputs.terraform-docs-version }}"
+        checksums="${{ inputs.terraform-docs-sha256 }}"
+
+        arch_type="$(uname -m)"
+        case "$arch_type" in
+          x86_64)        arch="amd64" ;;
+          aarch64|arm64) arch="arm64" ;;
+          *)             echo "Unsupported architecture: $arch_type" >&2; exit 1 ;;
+        esac
+
+        tarball="terraform-docs-${version}-linux-${arch}.tar.gz"
+
+        echo "Downloading terraform-docs ${version} for linux ${arch}"
+        curl -sSLo "$tarball" \
+          "https://github.com/terraform-docs/terraform-docs/releases/download/${version}/${tarball}"
+
+        # Normalize checksums list to one hash per line.
+        echo "${checksums}" | tr ' \t' '\n' | sed '/^$/d' > checksums.list
+
+        # Compute actual checksum of the tarball.
+        echo "Computing checksum for $tarball"
+        tarball_checksum="$(shasum -a 256 "$tarball" | awk '{print $1}')"
+
+        # Check against all provided checksums
+        match="false"
+        while read -r expected_checksum; do
+          if [ "$tarball_checksum" = "$expected_checksum" ]; then
+            match="true"
+            break
+          fi
+        done < checksums.list
+
+        if [ "$match" != "true" ]; then
+          echo "Checksum verification failed for $tarball" >&2
+          echo "Expected one of:" >&2
+          cat checksums.list >&2
+          exit 1
+        fi
+
+        echo "Checksum verified successfully"
+
+        tar -xzf "$tarball"
         chmod +x terraform-docs
         mv terraform-docs /usr/local/bin/terraform-docs
