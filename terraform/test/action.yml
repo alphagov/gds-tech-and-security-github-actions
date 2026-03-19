@@ -4,6 +4,7 @@ description: Discover and run Terraform tests
 inputs:
   terraform-version:
     description: "The version of terraform to use"
+    type: string
     required: false
     default: "v1.14.7"
 
