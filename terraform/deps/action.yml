@@ -41,7 +41,7 @@ inputs:
     required: false
     type: string
     default: |
-      d860265c7ebd8128c349d063c91e8f32b26b730d14c2ce85e187fef8be70d72d 
+      d860265c7ebd8128c349d063c91e8f32b26b730d14c2ce85e187fef8be70d72d
   checkov-version:
     description: 'Checkov version to use'
     required: false
