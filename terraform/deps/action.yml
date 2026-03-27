@@ -42,6 +42,7 @@ inputs:
     type: string
     default: |
       d860265c7ebd8128c349d063c91e8f32b26b730d14c2ce85e187fef8be70d72d
+      8266084a71d2e6a2333bc2c69b91c93c26dee9ef39ac2587ace2df54cc9b746b
   checkov-version:
     description: 'Checkov version to use'
     required: false
@@ -70,10 +71,13 @@ runs:
     - name: Verify Trivy Checksum # step added to verify trivy v0.69.3 binary
       shell: bash
       run: |
-          EXPECTED_SHA="${{ inputs.trivy-sha256 }}"
+          EXPECTED_SHA_COLLECTION="${{ inputs.trivy-sha256 }}"
           ACTUAL_SHA=$(sha256sum $(which trivy) | awk '{print $1}')
-          if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
-            echo "Trivy binary checksum mismatch!"
+          echo "Trivy SHA: $ACTUAL_SHA"
+          if echo "$EXPECTED_SHA_COLLECTION" | grep -Fq "$ACTUAL_SHA"; then
+            echo "Trivy binary checksum verified successfully."
+          else
+            echo "Error: Trivy binary checksum mismatch!"
             exit 1
           fi
 
