@@ -5,10 +5,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    cooldown:
-      default-days: 7 # Wait 7 days after version is released before opening PR
-      semver-major-days: 30 # major versions wait 30 days
-      semver-minor-days: 7 # minor versions wait 7 days
-      semver-patch-days: 3 # patches versions wait 3 days
     ignore:
       - dependency-name: "aquasecurity/setup-trivy" # temporary ignore
