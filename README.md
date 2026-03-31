@@ -38,10 +38,11 @@ Actions are defined as [composites](https://docs.github.com/en/actions/tutorials
 ## Release a new Github Action version
 
 1. Go to [Release Action](https://github.com/alphagov/gds-github-workflows/actions/workflows/_release.yml) workflow
-1. Press the button `Run workflow`
+1. Press the button `Run workflow` (only works for the `default` branch)
 1. Input a name for the action. It must correspond to an existing directory in the root of the repo
 1. (optional) specify a version. If not specified, it will auto-bump the latest tag
-1. The changelog is auto-generated. If necessary, please modify it to include important changes
+1. Press `Run workflow` again to trigger the workflow
+1. The changelog is auto-generated once it is finished. If necessary, please modify it to include important changes
 
 ## Workflows examples
 
