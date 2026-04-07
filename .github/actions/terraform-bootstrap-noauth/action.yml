@@ -58,4 +58,7 @@ runs:
       id: init
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: terraform -chdir=${{ inputs.terraform-dir }} init -backend=false ${{ inputs.terraform-init-extra-args }}
+      env:
+        TERRAFORM_DIR: ${{ inputs.terraform-dir }}
+        TERRAFORM_INIT_EXTRA_ARGS: ${{ inputs.terraform-init-extra-args }}
+      run: terraform -chdir=$TERRAFORM_DIR init -backend=false $TERRAFORM_INIT_EXTRA_ARGS
