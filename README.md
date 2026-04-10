@@ -6,7 +6,7 @@ This repository contains a collection of GitHub Actions workflow templates that 
 
 Create the workflow job, and then include the action as a step:
 
-`- uses: alphagov/gds-github-workflows/{directories}@{ref}`
+`- uses: alphagov/gds-tech-and-security-github-actions/{directories}@{ref}`
 
 E.g. for `pre-commit` action in `pre-commit/action.yml`:
 
@@ -21,7 +21,7 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Run pre-commit
-      uses: alphagov/gds-github-workflows/pre-commit@main
+      uses: alphagov/gds-tech-and-security-github-actions/pre-commit@main
 ```
 
 The `ref` can be a branch or a git tag, but for sensitive repositories it is **highly recommended** to use the commit SHA.
@@ -37,7 +37,7 @@ Actions are defined as [composites](https://docs.github.com/en/actions/tutorials
 
 ## Release a new Github Action version
 
-1. Go to [Release Action](https://github.com/alphagov/gds-github-workflows/actions/workflows/_release.yml) workflow
+1. Go to [Release Action](https://github.com/alphagov/gds-tech-and-security-github-actions/actions/workflows/_release.yml) workflow
 1. Press the button `Run workflow` (only works for the `default` branch)
 1. Input a name for the action. It must correspond to an existing directory in the root of the repo
 1. (optional) specify a version. If not specified, it will auto-bump the latest tag

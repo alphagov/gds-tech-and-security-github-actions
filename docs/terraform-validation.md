@@ -28,10 +28,10 @@ jobs:
       uses: actions/checkout@v6
 
     - name: Install terraform and dependencies
-      uses: alphagov/gds-github-workflows/terraform/deps@<release_tag>
+      uses: alphagov/gds-tech-and-security-github-actions/terraform/deps@<release_tag>
 
     - name: Run pre-commit
-      uses: alphagov/gds-github-workflows/pre-commit@<release_tag>
+      uses: alphagov/gds-tech-and-security-github-actions/pre-commit@<release_tag>
 ```
 
 Ensure you have a `.pre-commit-config.yaml` file in your repository root with hooks defined.

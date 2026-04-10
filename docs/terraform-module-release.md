@@ -36,7 +36,7 @@ permissions:
 
 jobs:
   release:
-    uses: alphagov/gds-github-workflows/.github/workflows/terraform-module-release.yml@<commit SHA> # v<semantic version>
+    uses: alphagov/gds-tech-and-security-github-actions/.github/workflows/terraform-module-release.yml@<commit SHA> # v<semantic version>
     name: GitHub Release
 ```
 
@@ -94,7 +94,7 @@ jobs:
           echo "Module: ${MODULE}, Version: ${VERSION}"
 
   release:
-    uses: alphagov/gds-github-workflows/.github/workflows/terraform-module-release.yml@<commit SHA> # v<semantic version>
+    uses: alphagov/gds-tech-and-security-github-actions/.github/workflows/terraform-module-release.yml@<commit SHA> # v<semantic version>
     name: GitHub Release
     needs: extract-module
     with:

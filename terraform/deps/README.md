@@ -13,6 +13,6 @@ It installs:
 ## Usage
 
 ```yaml
-- uses: alphagov/gds-github-workflows/terraform/deps@<release_tag>
+- uses: alphagov/gds-tech-and-security-github-actions/terraform/deps@<release_tag>
   with: [inputs]
 ```
