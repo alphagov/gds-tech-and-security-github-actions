@@ -29,7 +29,7 @@ runs:
         jq -n \
           --arg title "${{ inputs.comment_title }}" \
           --arg content "${{ inputs.comment_body }}" \
-          '{body: ("### " + $title + "\n\n" + $body + "\n")}' > /tmp/payload.json
+          '{body: ("### " + $title + "\n\n" + $content + "\n")}' > /tmp/payload.json
 
         # Post to GitHub PR comment API
         RESPONSE=$(curl -s -w "%{http_code}\n" -o /tmp/response.json \
