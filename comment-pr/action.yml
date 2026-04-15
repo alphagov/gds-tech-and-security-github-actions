@@ -22,14 +22,17 @@ runs:
   using: 'composite'
   steps:
     - shell: bash
+      env:
+        COMMENT_TITLE: ${{ inputs.comment_title }}
+        COMMENT_BODY: ${{ inputs.comment_body }}
       run: |
         set -e
 
         # JSON payload with coment content
         jq -n \
-          --arg title "${{ inputs.comment_title }}" \
-          --arg content "${{ inputs.comment_body }}" \
-          '{body: ("### " + $title + "\n\n" + $body + "\n")}' > /tmp/payload.json
+          --arg title "$COMMENT_TITLE" \
+          --arg content "$COMMENT_BODY" \
+          '{body: ("### " + $title + "\n\n" + $content + "\n")}' > /tmp/payload.json
 
         # Post to GitHub PR comment API
         RESPONSE=$(curl -s -w "%{http_code}\n" -o /tmp/response.json \
