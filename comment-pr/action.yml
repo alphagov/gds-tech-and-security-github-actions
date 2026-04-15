@@ -1,0 +1,49 @@
+name: 'Comment PR'
+description: 'This action provides a standardised way to report logs, deployment statuses, or tool outputs (like Terraform plans) regardless of where the target PR lives.'
+
+inputs:
+  token:
+    description: Github token which has write permission for pull requests on pr_repository.
+    required: true
+  pr_repository:
+    description: 'Repository with the PR (in owner/repo format)'
+    required: true
+  pr_number:
+    description: 'PR number'
+    required: true
+  comment_title:
+    description: 'Comment title'
+    required: true
+  comment_body:
+    description: 'Comment body'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        set -e
+
+        # Create JSON payload with coment content
+        jq -n \
+          '{body: ("###" + ${{ inputs.comment_title }} + "\n```\n" + ${{ inputs.comment_body }} + "\n```")}' > /tmp/payload.json
+
+        # Post comment to GitHub PR
+        RESPONSE=$(curl -s -w "%{http_code}\n" -o /tmp/response.json \
+          -X POST \
+          -H "Authorization: token ${{ inputs.token }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/json" \
+          "https://api.github.com/repos/${{ inputs.pr_repository }}/issues/${{ inputs.pr_number }}/comments" \
+          -d @/tmp/payload.json
+        )
+
+        # Check response
+        if [ "$RESPONSE" = "201" ]; then
+          echo "Successfully posted comment to PR ${{ inputs.pr_number }} in ${{ inputs.pr_repository }} "
+        else
+          echo "Failed to dispatch PR ${{ inputs.pr_number }} to ${{ inputs.pr_repository }}. HTTP Status: $RESPONSE"
+          cat /tmp/response.json
+          exit 1
+        fi
