@@ -12,10 +12,10 @@ inputs:
     description: 'PR number'
     required: true
   comment_title:
-    description: 'Comment title'
+    description: 'The title for the PR comment'
     required: true
   comment_body:
-    description: 'Comment body'
+    description: 'The body for the PR comment'
     required: true
 
 runs:
@@ -25,11 +25,13 @@ runs:
       run: |
         set -e
 
-        # Create JSON payload with coment content
+        # JSON payload with coment content
         jq -n \
-          '{body: ("###" + ${{ inputs.comment_title }} + "\n```\n" + ${{ inputs.comment_body }} + "\n```")}' > /tmp/payload.json
+          --arg title "${{ inputs.comment_title }}" \
+          --arg content "${{ inputs.comment_body }}" \
+          '{body: ("### " + $title + "\n\n" + $body + "\n")}' > /tmp/payload.json
 
-        # Post comment to GitHub PR
+        # Post to GitHub PR comment API
         RESPONSE=$(curl -s -w "%{http_code}\n" -o /tmp/response.json \
           -X POST \
           -H "Authorization: token ${{ inputs.token }}" \
@@ -39,7 +41,7 @@ runs:
           -d @/tmp/payload.json
         )
 
-        # Check response
+        # Check http response
         if [ "$RESPONSE" = "201" ]; then
           echo "Successfully posted comment to PR ${{ inputs.pr_number }} in ${{ inputs.pr_repository }} "
         else
