@@ -1,0 +1,72 @@
+name: update-check
+description: Update check
+
+inputs:
+  name:
+    description: The name of the check to update
+    required: true
+  status:
+    description: "The status of the check. Can be one of: queued, in_progress, completed"
+  token:
+    description: The GitHub App token to use to call the GitHub REST API
+    required: true
+  ref:
+    description: The git reference to update the check against. Can be a sha, branch or tag. Recommended to use commit sha
+    required: true
+  repository:
+    description: The fully qualified repository name e.g. org-name/repo-name
+    required: true
+  title:
+    description: Title of the check to display in the check view
+  summary:
+    description: A brief summary of the outcome of the check, accepts markdown
+  conclusion:
+    required: true
+    description: "Can be one of: action_required, cancelled, failure, neutral, success, skipped, stale, timed_out"
+
+runs:
+  using: composite
+  steps:
+    - name: Update Checks
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        github-token: ${{ inputs.token }}
+        script: |
+          const [owner, repo] = core.getInput('repository', { required: true }).split('/');
+          const conclusion = core.getInput('conclusion', { required: true });
+          const ref = core.getInput('ref', { required: true });
+          const name = core.getInput('name', { required: true });
+          const title = core.getInput('title', { required: false });
+          const status = core.getInput('status', { required: true });
+          const summary = core.getInput('summary', { required: false });
+
+          const baseOptions = {
+            owner,
+            repo,
+          };
+
+          const { data: { check_runs, total_count } } = await github.rest.checks.listForRef({ ...baseOptions, ref });
+
+          const check = check_runs.find((check) => check.name === name);
+
+          if (!check) {
+            throw new Error(`Unable to find check run for ${name} with ref ${ref}`);
+          }
+
+          let updateOptions = {
+            check_run_id: check.id,
+            conclusion,
+            status
+          }
+
+          if (title !== undefined || summary !== undefined) {
+            updateOptions.output = {
+              title,
+              summary
+            }
+          }
+
+          await github.rest.checks.update({
+            ...baseOptions,
+            ...updateOptions
+          })
