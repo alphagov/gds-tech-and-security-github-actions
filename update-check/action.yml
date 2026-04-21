@@ -5,8 +5,6 @@ inputs:
   name:
     description: The name of the check to update
     required: true
-  status:
-    description: "The status of the check. Can be one of: queued, in_progress, completed"
   token:
     description: The GitHub App token to use to call the GitHub REST API
     required: true
@@ -16,12 +14,13 @@ inputs:
   repository:
     description: The fully qualified repository name e.g. org-name/repo-name
     required: true
+  status:
+    description: "The status of the check. Can be one of: queued, in_progress, completed"
   title:
     description: Title of the check to display in the check view
   summary:
     description: A brief summary of the outcome of the check, accepts markdown
   conclusion:
-    required: true
     description: "Can be one of: action_required, cancelled, failure, neutral, success, skipped, stale, timed_out"
 
 runs:
@@ -33,7 +32,7 @@ runs:
         github-token: ${{ inputs.token }}
         script: |
           const [owner, repo] = core.getInput('repository', { required: true }).split('/');
-          const conclusion = core.getInput('conclusion', { required: true });
+          const conclusion = core.getInput('conclusion', { required: false });
           const ref = core.getInput('ref', { required: true });
           const name = core.getInput('name', { required: true });
           const title = core.getInput('title', { required: false });
@@ -55,8 +54,11 @@ runs:
 
           let updateOptions = {
             check_run_id: check.id,
-            conclusion,
             status
+          }
+
+          if (conclusion) {
+            updateOptions.conclusion = conclusion
           }
 
           if (title !== undefined || summary !== undefined) {
