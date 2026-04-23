@@ -40,7 +40,7 @@ runs:
         github-token: ${{ inputs.token }}
         script: |
           const [owner, repo] = process.env.CHECK_REPOSITORY.split('/');
-          
+
           const conclusion = process.env.CHECK_CONCLUSION;
           const ref = process.env.CHECK_REF;
           const name = process.env.CHECK_NAME;
