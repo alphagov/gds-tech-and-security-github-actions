@@ -28,16 +28,25 @@ runs:
   steps:
     - name: Update Checks
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        CHECK_REPOSITORY: ${{ inputs.repository }}
+        CHECK_CONCLUSION: ${{ inputs.conclusion }}
+        CHECK_REF: ${{ inputs.ref }}
+        CHECK_NAME: ${{ inputs.name }}
+        CHECK_TITLE: ${{ inputs.title }}
+        CHECK_STATUS: ${{ inputs.status }}
+        CHECK_SUMMARY: ${{ inputs.summary }}
       with:
         github-token: ${{ inputs.token }}
         script: |
-          const [owner, repo] = core.getInput('repository', { required: true }).split('/');
-          const conclusion = core.getInput('conclusion', { required: false });
-          const ref = core.getInput('ref', { required: true });
-          const name = core.getInput('name', { required: true });
-          const title = core.getInput('title', { required: false });
-          const status = core.getInput('status', { required: true });
-          const summary = core.getInput('summary', { required: false });
+          const [owner, repo] = process.env.CHECK_REPOSITORY.split('/');
+
+          const conclusion = process.env.CHECK_CONCLUSION;
+          const ref = process.env.CHECK_REF;
+          const name = process.env.CHECK_NAME;
+          const title = process.env.CHECK_TITLE;
+          const status = process.env.CHECK_STATUS;
+          const summary = process.env.CHECK_SUMMARY;
 
           const baseOptions = {
             owner,
