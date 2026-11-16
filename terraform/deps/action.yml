@@ -67,7 +67,7 @@ runs:
       run: |
         set -euo pipefail
         actual_sha=$(sha256sum "$(readlink -f "$(which terraform-bin)")" | awk '{print $1}')
-        
+
         if ! printf '%s\n' "$CHECKSUMS" | grep -Fxq "$actual_sha"; then
           echo "Terraform binary checksum mismatch!"
           exit 1
@@ -110,7 +110,7 @@ runs:
         CHECKSUMS: ${{ inputs.checkov-sha256 }}
       run: |
         set -o pipefail
-        
+
         echo "Install Checkov ${version}"
         {
           printf 'checkov==%s' "$VERSION"
@@ -119,7 +119,7 @@ runs:
           done
           printf '\n'
         } | pip install -q --require-hashes --only-binary=:all: --no-deps -r /dev/stdin
-        
+
         pip install -q "checkov==${VERSION}"
 
     - name: Install terraform-docs
