@@ -5,50 +5,49 @@ inputs:
   terraform-version:
     description: 'Terraform version to use'
     required: false
-    type: string
+    default: 'v1.17.2'
+  terraform-sha256:
+    description: 'Terraform version to use'
+    required: false
     default: 'latest'
   terraform-docs-version:
     description: 'Terraform-docs version to use'
     required: false
-    type: string
     default: 'v0.24.0'
   terraform-docs-sha256:
     description: 'Terraform-docs sha256 checksum to verify'
     required: false
-    type: string
     default: |
       9005daf969de0b50134493a2c00078b49f5f5b39d021cda7c89bf4d4f3d776d3
       d12bd7b73c1fc9c64efc79f8157dd713dabd559f1ecf3cfc0f42e32279a155fd
   tflint-version:
     description: 'TFLint version to use'
     required: false
-    type: string
     default: 'v0.61.0'
   tflint-sha256:
     description: 'TFLint sha256 checksum to verify'
     required: false
-    type: string
     default: |
       ca4e4e8cb7cc3436f2b6979e9c4fd4e2623a66fcca1ad1fe12f8669967636ae2
       999c25cfdb5208fe1133dec6b219e666a39fc2a7a0786a781dc9924ea5945ebf
   trivy-version:
     description: 'Trivy version to use'
     required: false
-    type: string
     default: 'v0.69.3'
   trivy-sha256:
     description: 'Trivy sha256 checksum to verify'
     required: false
-    type: string
     default: |
       d860265c7ebd8128c349d063c91e8f32b26b730d14c2ce85e187fef8be70d72d
       8266084a71d2e6a2333bc2c69b91c93c26dee9ef39ac2587ace2df54cc9b746b
   checkov-version:
     description: 'Checkov version to use'
     required: false
-    type: string
-    default: 'latest'
-
+    default: '3.4.5'
+  checkov-sha256:
+    description: 'Checkov wheel sha256 checksum to verify'
+    required: false
+    default: '64210c48a957ecb85dfb38057e00faa150b5e46e76b08e710d29beb687b7ced2'
 runs:
   using: composite
   steps:
@@ -59,19 +58,10 @@ runs:
 
     - name: Verify Terraform
       shell: bash
-      working-directory: ${{ runner.temp }}
+      env:
+        SHA256: ${{ inputs.terraform-sha256 }}
       run: |
-        set -o pipefail
-        VERSION=$(terraform-bin version -json | jq -r '.terraform_version')
-        ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
-        ZIP="terraform_${VERSION}_linux_${ARCH}.zip"
-        BASE="https://releases.hashicorp.com/terraform/${VERSION}"
-        
-        curl -sSLfO "${BASE}/${ZIP}" -O "${BASE}/terraform_${VERSION}_SHA256SUMS" -O "${BASE}/terraform_${VERSION}_SHA256SUMS.sig"
-        
-        gpgv --keyring "${{ github.action_path }}/hashicorp.gpg" "terraform_${VERSION}_SHA256SUMS.sig" "terraform_${VERSION}_SHA256SUMS"
-        grep " ${ZIP}\$" "terraform_${VERSION}_SHA256SUMS" | sha256sum -c -
-        unzip -p "$ZIP" terraform | cmp -s - "$(readlink -f "$(which terraform-bin)")"
+        echo "${SHA256}  $(readlink -f "$(which terraform-bin)")" | sha256sum -c -
 
     - name: Setup TFLint
       uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
@@ -104,13 +94,22 @@ runs:
 
     - name: Install Checkov
       shell: bash
+      env:
+        VERSION: ${{ inputs.checkov-version }}
+        CHECKSUMS: ${{ inputs.checkov-sha256 }}
       run: |
-        echo "Install Checkov"
-        package_spec="checkov"
-        [ "${{ inputs.checkov-version }}" != "latest" ] && package_spec+="==${{ inputs.checkov-version }}"
-        pip install \
-          -q \
-          "$package_spec"
+        set -o pipefail
+        
+        echo "Install Checkov ${version}"
+        {
+          printf 'checkov==%s' "$VERSION"
+          for sha in $CHECKSUMS; do
+          printf ' --hash=sha256:%s' "$sha"
+          done
+          printf '\n'
+        } | pip install -q --require-hashes --only-binary=:all: --no-deps -r /dev/stdin
+        
+        pip install -q "checkov==${VERSION}"
 
     - name: Install terraform-docs
       shell: bash --noprofile --norc -euo pipefail {0}
