@@ -103,7 +103,7 @@ runs:
       with:
         python-version: '3.x'
 
-    - name: Install Checkov
+    - name: Install and Verify Checkov
       shell: bash
       env:
         VERSION: ${{ inputs.checkov-version }}
