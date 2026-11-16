@@ -9,7 +9,9 @@ inputs:
   terraform-sha256:
     description: 'Terraform version to use'
     required: false
-    default: 'dbfef0be43ba2117481be510d3b83a2d8cdfa6ae7ec69c5aeb04b3947956ff7e'
+    default: |
+      d54e1202dac657f53fa5982c3481e6f001fafce7ee505dfaf3466d5e934f44e1
+      dbfef0be43ba2117481be510d3b83a2d8cdfa6ae7ec69c5aeb04b3947956ff7e
   terraform-docs-version:
     description: 'Terraform-docs version to use'
     required: false
@@ -61,9 +63,16 @@ runs:
     - name: Verify Terraform
       shell: bash
       env:
-        SHA256: ${{ inputs.terraform-sha256 }}
+        CHECKSUMS: ${{ inputs.terraform-sha256 }}
       run: |
-        echo "${SHA256}  $(readlink -f "$(which terraform-bin)")" | sha256sum -c -
+        set -euo pipefail
+        actual_sha=$(sha256sum "$(readlink -f "$(which terraform-bin)")" | awk '{print $1}')
+        
+        if ! printf '%s\n' "$CHECKSUMS" | grep -Fxq "$actual_sha"; then
+          echo "Terraform binary checksum mismatch!"
+          exit 1
+        fi
+        echo "Terraform binary checksum verified successfully."
 
     - name: Setup TFLint
       uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337 # v6.3.2
