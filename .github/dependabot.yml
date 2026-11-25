@@ -8,5 +8,21 @@ updates:
       - "/terraform/*"   # Catches /terraform/deps
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "aquasecurity/setup-trivy" # temporary ignore
+    cooldown:
+      default-days: 5
+    groups:
+      actions-dependency-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 5
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "pre-commit"
