@@ -81,7 +81,7 @@ runs:
         checksums: ${{ inputs.tflint-sha256 }}
 
     - name: Setup Trivy
-      uses: aquasecurity/setup-trivy@3fb12ec12f41e471780db15c232d5dd185dcb514 # v0.2.6 - see dependabot.yml ignore rule
+      uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567 # v0.2.6 - see dependabot.yml ignore rule
       with:
         version: ${{ inputs.trivy-version }}
 
@@ -99,7 +99,7 @@ runs:
           fi
 
     - name: Setup Python
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: '3.x'
 
