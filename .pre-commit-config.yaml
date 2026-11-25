@@ -13,7 +13,7 @@ repos:
       - id: yamllint
 
   - repo: https://github.com/jackdewinter/pymarkdown
-    rev: c5755e272a13da06be38d74052658af46c1ee447 # v0.9.35
+    rev: 4b13b0235c9921966e8093b46948041075c80460 # v0.9.42
     hooks:
       - id: pymarkdown
 
